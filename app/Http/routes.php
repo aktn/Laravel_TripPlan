@@ -10,7 +10,20 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+use Parse\ParseObject;
+use Parse\ParseQuery;
+use Parse\ParseACL;
+use Parse\ParsePush;
+use Parse\ParseUser;
+use Parse\ParseInstallation;
+use Parse\ParseException;
+use Parse\ParseAnalytics;
+use Parse\ParseFile;
+use Parse\ParseCloud;
+use Parse\ParseClient;
+use Illuminate\Routing\Controller as BaseController;
 
+ParseClient::initialize('LBCfjayh4S3TAtZcPtegICLsuUkxKbUk4kXLZki9', 'AVCndaet1NaH6892druOx95gOG5diRP28SzqwQpX', 'nPnExS3KI0NyGytAbHEiH7rnj8kbhe0EhYQGtUau');
 Route::get('/', function () {
     return view('welcome');
 });
@@ -18,6 +31,8 @@ Route::get('/', function () {
 Route::get('/uploadAttractions', function(){
 	return view('expertTemplate.addAttractions');
 });
+
+Route::post('uploadAttractions',['as'=>'expert','uses'=>'ExpertController@store']);
 
 Route::get('profile',['as'=>'expert','uses'=>'ExpertController@index']);
 

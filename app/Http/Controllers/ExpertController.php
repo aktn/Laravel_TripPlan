@@ -17,6 +17,7 @@ use Parse\ParseFile;
 use Parse\ParseCloud;
 use Parse\ParseClient;
 use Illuminate\Routing\Controller as BaseController;
+use TripPlan\Http\Requests\ValidateUploadAttraction;
 
 class ExpertController extends BaseController
 {
@@ -29,7 +30,7 @@ class ExpertController extends BaseController
 
     public function postLogIn()
     {
-        ParseClient::initialize('LBCfjayh4S3TAtZcPtegICLsuUkxKbUk4kXLZki9', 'AVCndaet1NaH6892druOx95gOG5diRP28SzqwQpX', 'nPnExS3KI0NyGytAbHEiH7rnj8kbhe0EhYQGtUau');
+        
         $email = $request->get('email');
         $pass = $request->get('password');
         $user = ParseUser::logIn($email, $password);
@@ -37,10 +38,8 @@ class ExpertController extends BaseController
 
     public function index()
     {
-        ParseClient::initialize('LBCfjayh4S3TAtZcPtegICLsuUkxKbUk4kXLZki9', 'AVCndaet1NaH6892druOx95gOG5diRP28SzqwQpX', 'nPnExS3KI0NyGytAbHEiH7rnj8kbhe0EhYQGtUau');
-        $query = new ParseQuery("experts");
+        $query = new ParseQuery("attractions");
        try{
-            $expert = $query->get("IoKuNw5hiW");
             $email = $expert->get("email");
             $email = $expert->get("name");
             $password = $expert->get("password");
@@ -61,54 +60,68 @@ class ExpertController extends BaseController
     }
 
 
-    public function store(ListFormRequest $request)
+    public function store(ValidateUploadAttraction $request)
     {
-        $list = new Todolist(array(
-            'name' => $request->get('name'),
-            'description' => $request->get('description')
-        ));
+        $attraction = new ParseObject("attractions");
+        $attraction->set("name", $request->get('name'));
+        $attraction->set("type", $request->get('type'));
+        $attraction->set("location", $request->get('location'));
+        $attraction->set("description", $request->get('description'));
 
-        $list->save();
+        $file = $request->file('image');
+       // $localFilePath = "/public/images/attractions/Palace.jpg";
+        $f = ParseFile::createFromData(file_get_contents( $_FILES['image']['tmp_name'] ), $_FILES['image']['name']  );
+        $f->save();
 
-        if(count($request->get('categories'))>0){
-            $list->categories()->attach($request->get('categories'));
-        }
+        $audio = $request->file('media');
+        $m = ParseFile::createFromData(file_get_contents( $_FILES['media']['tmp_name'] ), $_FILES['media']['name']  );
+        $m->save();
 
-        return \Redirect::route('lists.create')->with('message','Your list has been created');
+
+        $attraction->set("image",$f);
+        $attraction->set("media",$m);
+
+        $a = $request->get('priority');
+        $int = (int)$a;
+        $attraction->set("priority", $int);
+
+        $expID = 'wJacAzyx3T';
+        $exp = '7YuChBta6I';
+
+        $query = new ParseQuery("experts");
+        $expertID = $query->get($expID);
+
+        $query1 = new ParseQuery("Cities");
+        $expert = $query1->get($exp);
+       
+
+        $attraction->set("expert",$expertID);
+        $attraction->set("city_attractions",$expert);
+        $attraction->save();
+
+
+
+
+        return \Redirect::route('uploadAttractions')->with('message','Your list has been created');
     }
 
 
     public function show($id)
-    {
-       
+    {      
     }
 
 
     public function edit($id)
     {
-        $list = Todolist::find($id);
-        return view('lists.edit')->with('list',$list);
     }
 
 
     public function update(ListFormRequest $request, $id)
-    {
-        $list = Todolist::find($id);
-
-        $list->update([
-            'name'  => $request->get('name'),
-            'description' => $request->get('description')
-        ]);
-
-        return \Redirect::route('lists.edit',array($list->id))->with('message','Your list has been updated!');
+    {        
     }
 
 
     public function destroy($id)
-    {
-        Todolist::destroy($id);
-
-        return \Redirect::route('lists.index')
-            ->with('message','The list have been deleted');
+    {  
     }
 }
