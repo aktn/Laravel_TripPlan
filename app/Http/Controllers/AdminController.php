@@ -65,7 +65,7 @@ class AdminController extends BaseController
         $expert->set("city",$city);
         $expert->save();
 
-        return \Redirect::route('admin.addExpert')->with('message','Your list has been created');
+        return \Redirect::route('addExpert')->with('message','Expert has been created');
     }
 
 

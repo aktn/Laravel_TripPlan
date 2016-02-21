@@ -32,12 +32,7 @@ Route::get('/uploadAttractions', function(){
 	return view('expertTemplate.addAttractions');
 });
 
-Route::post('uploadAttractions',['as'=>'expert','uses'=>'ExpertController@store']);
-
 Route::get('profile',['as'=>'expert','uses'=>'ExpertController@index']);
-
-Route::get('addExpert',['as'=>'admin','uses'=>'AdminController@create']);
-Route::post('addExpert',['uses'=>'AdminController@store']);
 
 Route::get('ExpertLogIn',['as'=>'admin','uses'=>'ExpertController@getLogIn']);
 
@@ -54,5 +49,10 @@ Route::get('ExpertLogIn',['as'=>'admin','uses'=>'ExpertController@getLogIn']);
 */
 
 Route::group(['middleware' => ['web']], function () {
-    //
+    
+	Route::get('uploadAttractions',['as'=>'uploadAttractions','uses'=>'ExpertController@create']);    
+    Route::post('uploadAttractions',['as'=>'expert','uses'=>'ExpertController@store']);
+
+    Route::get('addExpert',['as'=>'addExpert','uses'=>'AdminController@create']);
+    Route::post('addExpert',['uses'=>'AdminController@store']);
 });

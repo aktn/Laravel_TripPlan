@@ -25,7 +25,12 @@ class ValidateUploadAttraction extends Request
     public function rules()
     {
         return [
-            
+            'name' => 'required|max:50',
+            'type' => 'required',
+            'location' => 'required',
+            'description' => 'required',
+            'image' => 'required',
+            'media' => 'required'
         ];
     }
 }

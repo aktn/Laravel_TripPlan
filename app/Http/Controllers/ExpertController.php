@@ -56,7 +56,7 @@ class ExpertController extends BaseController
     public function create()
     {
        
-        return view('welcome');
+        return view('expertTemplate.addAttractions');
     }
 
 
@@ -102,7 +102,7 @@ class ExpertController extends BaseController
 
 
 
-        return \Redirect::route('uploadAttractions')->with('message','Your list has been created');
+        return \Redirect::route('uploadAttractions')->with('message','Attraction has been created');
     }
 
 
