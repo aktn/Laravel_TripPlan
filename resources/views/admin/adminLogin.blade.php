@@ -22,7 +22,7 @@
 
     <div class="panel-body" > 
 
-    {!! Form::open(array('url' => 'ExpertLogIn','method' => 'post', 'class' => 'form-horizontal'))!!}
+    {!! Form::open(array('url' => 'adminLogIn','method' => 'post', 'class' => 'form-horizontal'))!!}
 
 
       <div class="form-group">

@@ -18,38 +18,45 @@ use Parse\ParseCloud;
 use Parse\ParseClient;
 use Illuminate\Routing\Controller as BaseController;
 use TripPlan\Http\Requests\ValidateUploadAttraction;
+use TripPlan\Http\Requests\ValidateLoginExpert;
+
 
 class ExpertController extends BaseController
 {
-
-
     public function getLogIn()
     {
         return view('expertTemplate.login');
     }
 
-    public function postLogIn()
+    public function postLogIn(ValidateLoginExpert $request)
     {
         
         $email = $request->get('email');
         $pass = $request->get('password');
-        $user = ParseUser::logIn($email, $password);
+        
+        $user = ParseUser::logIn($email, $pass);
+
+        $query = new ParseQuery("attractions");
+        $currentUser = ParseUser::getCurrentUser();
+        try{
+            $attractions = $query->find();
+            return view('expertTemplate.displayAttractions')->with('attractions',$attractions)
+                                                            ->with('currentUser',$currentUser);
+        }
+        catch(ParseException $ex){
+        }
     }
 
     public function index()
     {
         $query = new ParseQuery("attractions");
-       try{
-            $email = $expert->get("email");
-            $email = $expert->get("name");
-            $password = $expert->get("password");
-            $expert->fetch();
+        try{
+            $attractions = $query->find();
+            return view('expertTemplate.displayAttractions')->with('attractions',$attractions);
+        }
+        catch(ParseException $ex){
 
-            return view('expertTemplate.profile')->with('expert',$expert);
-       }
-       catch(ParseException $ex){
-
-       }
+        }
     }
 
 
@@ -77,7 +84,6 @@ class ExpertController extends BaseController
         $m = ParseFile::createFromData(file_get_contents( $_FILES['media']['tmp_name'] ), $_FILES['media']['name']  );
         $m->save();
 
-
         $attraction->set("image",$f);
         $attraction->set("media",$m);
 
@@ -92,15 +98,11 @@ class ExpertController extends BaseController
         $expertID = $query->get($expID);
 
         $query1 = new ParseQuery("Cities");
-        $expert = $query1->get($exp);
-       
+        $expert = $query1->get($exp);      
 
         $attraction->set("expert",$expertID);
         $attraction->set("city_attractions",$expert);
         $attraction->save();
-
-
-
 
         return \Redirect::route('uploadAttractions')->with('message','Attraction has been created');
     }
@@ -108,20 +110,65 @@ class ExpertController extends BaseController
 
     public function show($id)
     {      
+        $query = new ParseQuery("attractions");
+        try{
+            $attraction = $query->get($id);
+            return view('expertTemplate.singleAttraction')->with('attraction',$attraction);
+        }
+        catch(ParseException $ex){
+
+        }
     }
 
 
     public function edit($id)
     {
+        $query = new ParseQuery("attractions");
+        try{
+            $attraction = $query->get($id);
+            return view('expertTemplate.editAttraction')->with('attraction',$attraction);
+        }
+        catch(ParseException $ex){
+
+        }
     }
 
+    public function update(ValidateUploadAttraction $request, $id)
+    {
+        $query = new ParseQuery("attractions");
+        try{
 
-    public function update(ListFormRequest $request, $id)
-    {        
+        $attraction = $query->get($id);
+      //  $attraction = $query->equalTo("objectId",$id);
+      //  $attraction = $query->first();
+        $attraction->set("name", $request->get('name'));
+        $attraction->set("type", $request->get('type'));
+        $attraction->set("location", $request->get('location'));
+        $attraction->set("description", $request->get('description'));
+
+       
+        $attraction->save();
+
+        return \Redirect::route('uploadAttractions')->with('message','Attraction has been created');        
+        }
+        catch(ParseException $ex){
+            
+        }
+
     }
 
 
     public function destroy($id)
     {  
+        $query = new ParseQuery("attractions");
+        try{
+            $query->equalTo("objectId",$id);
+            $attraction = $query->first();
+            $attraction->destroy();
+            return \Redirect::route('displayAttractions')->with('message','Attraction has been deleted');
+        }
+        catch(ParseException $ex){
+            
+        }    
     }
 }

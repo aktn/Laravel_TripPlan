@@ -19,6 +19,9 @@ use Parse\ParseClient;
 use Illuminate\Routing\Controller as BaseController;
 
 use TripPlan\Http\Requests\ValidateAddExpert;
+use TripPlan\Http\Requests\ValidateLoginAdmin;
+
+
 
 class AdminController extends BaseController
 {
@@ -50,8 +53,7 @@ class AdminController extends BaseController
 
 
     public function store(ValidateAddExpert $request)
-    {
-        
+    {   
         $expert = new ParseObject("experts");
         $expert->set("name", $request->get('name'));
         $expert->set("email", $request->get('email'));
@@ -73,4 +75,63 @@ class AdminController extends BaseController
     {
        
     }
+
+    public function getLogIn()
+    {
+        return view('admin.adminLogin');
+    }
+
+    public function postLogIn(ValidateLoginAdmin $request)
+    {
+        $email = $request->get('email');
+        $pass = $request->get('password');
+        
+        $user = ParseUser::logIn($email, $pass);
+
+        $query = new ParseQuery("attractions");
+        $currentUser = ParseUser::getCurrentUser();
+        try{
+            $attractions = $query->find();
+            return view('admin.viewExperts')->with('attractions',$attractions)
+                                            ->with('currentUser',$currentUser);
+        }
+        catch(ParseException $ex){
+
+        }
+    }
+
+    public function getExperts()
+    {
+        $q = ParseUser::query();
+        $q->equalTo("role","tripexpert");
+        $currentUser = ParseUser::getCurrentUser();
+        if ($currentUser){
+            $tripExperts = $q->find();
+            return view('admin.viewExperts')->with('tripExperts',$tripExperts)
+                                             ->with('currentUser',$currentUser);
+        }
+        else{
+             return view('admin.viewExperts');
+        }  
+    }
+
+    public function getAttractions()
+    {
+        $city = new ParseQuery("Cities");
+        $city->equalTo("city_name","NewYork");
+
+        $query = new ParseQuery("attractions");
+        $query->matchesQuery("city_attractions",$city);
+
+        $currentUser = ParseUser::getCurrentUser();
+        if ($currentUser){
+            $attractions = $query->find();
+            return view('expertTemplate.displayAttractions')->with('attractions',$attractions)
+                                                            ->with('currentUser',$currentUser);
+        }
+        else{
+             
+        }
+    }
+
 }
